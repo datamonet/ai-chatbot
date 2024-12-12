@@ -59,3 +59,14 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000/).
+
+
+## Database Migration
+
+You can run the database migrations with the following command:
+
+```bash
+pnpm drizzle-kit generate
+pnpm drizzle-kit migrate
+pnpm drizzle-kit push
+```
