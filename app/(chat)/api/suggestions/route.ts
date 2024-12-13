@@ -1,5 +1,5 @@
 import { auth } from '@/app/(auth)/auth';
-import { getSuggestionsByDocumentId } from '@/lib/db/queries';
+import { getSuggestionsByDocumentId } from '@/prisma/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -15,9 +15,9 @@ export async function GET(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const suggestions = await getSuggestionsByDocumentId({
+  const suggestions = await getSuggestionsByDocumentId(
     documentId,
-  });
+  );
 
   const [suggestion] = suggestions;
 

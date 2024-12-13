@@ -1,5 +1,5 @@
 import { auth } from '@/app/(auth)/auth';
-import { getVotesByChatId, voteMessage } from '@/lib/db/queries';
+import { getVotesByChatId, voteMessage } from '@/prisma/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const votes = await getVotesByChatId({ id: chatId });
+  const votes = await getVotesByChatId( chatId );
 
   return Response.json(votes, { status: 200 });
 }
@@ -38,11 +38,11 @@ export async function PATCH(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  await voteMessage({
+  await voteMessage(
     chatId,
     messageId,
-    type: type,
-  });
+type,
+  );
 
   return new Response('Message voted', { status: 200 });
 }

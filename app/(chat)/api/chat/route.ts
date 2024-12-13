@@ -19,8 +19,8 @@ import {
   saveDocument,
   saveMessages,
   saveSuggestions,
-} from '@/lib/db/queries';
-import type { Suggestion } from '@/lib/db/schema';
+} from '@/prisma/queries';
+import type { Suggestion } from '@/prisma/schema.';
 import {
   generateUUID,
   getMostRecentUserMessage,

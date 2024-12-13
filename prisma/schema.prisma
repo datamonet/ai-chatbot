@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String     @id @default(uuid())
+  email    String     @unique @db.VarChar(64)
+  password String?    @db.VarChar(64)
+  chats    Chat[]
+  documents Document[]
+  suggestions Suggestion[]
+}
+
+model Chat {
+  id         String    @id @default(uuid())
+  createdAt  DateTime
+  title      String
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  visibility String    @default("private")
+  messages   Message[]
+  votes      Vote[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  role      String
+  content   Json
+  createdAt DateTime
+  votes     Vote[]
+}
+
+model Vote {
+  chatId    String
+  messageId String
+  chat      Chat    @relation(fields: [chatId], references: [id])
+  message   Message @relation(fields: [messageId], references: [id])
+  isUpvoted Boolean
+
+  @@id([chatId, messageId])
+}
+
+model Document {
+  id        String      @id @default(uuid())
+  createdAt DateTime
+  title     String
+  content   String?
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  suggestions Suggestion[]
+
+  @@unique([id, createdAt])
+}
+
+model Suggestion {
+  id                String   @id @default(uuid())
+  documentId        String
+  documentCreatedAt DateTime
+  document          Document @relation(fields: [documentId, documentCreatedAt], references: [id, createdAt])
+  originalText      String
+  suggestedText     String
+  description       String?
+  isResolved        Boolean  @default(false)
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  createdAt         DateTime
+}

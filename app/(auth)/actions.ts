@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 
-import { createUser, getUser } from '@/lib/db/queries';
+import { createUser, getUser } from '@/prisma/queries';
 
 import { signIn } from './auth';
 
@@ -61,8 +61,7 @@ export const register = async (
       password: formData.get('password'),
     });
 
-    const [user] = await getUser(validatedData.email);
-
+    const user = await getUser(validatedData.email);
     if (user) {
       return { status: 'user_exists' } as RegisterActionState;
     }
