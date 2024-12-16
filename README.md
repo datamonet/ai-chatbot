@@ -61,36 +61,40 @@ pnpm dev
 Your app template should now be running on [localhost:3000](http://localhost:3000/).
 
 
-## Database Migration
+# Local Database Setup
 
-You can run the database migrations with the following command:
-
+Install PostgreSQL if you haven't already:
 ```bash
-pnpm drizzle-kit generate
-pnpm drizzle-kit migrate
-pnpm drizzle-kit push
+brew install postgresql@16
+```
+Start PostgreSQL service:
+```bash
+brew services start postgresql@16
 ```
 
-
-# change db schema
-`npm install prisma --save-dev`
-`npx prisma init`
+Create a new database:
+```bash
+createdb chat
 ```
 
-✔ Your Prisma schema was created at prisma/schema.prisma
-  You can now open it in your favorite editor.
-
-warn You already have a .gitignore file. Don't forget to add `.env` in it to not commit any private information.
-
-Next steps:
-1. Set the DATABASE_URL in the .env file to point to your existing database. If your database has no tables yet, read https://pris.ly/d/getting-started
-2. Set the provider of the datasource block in schema.prisma to match your database: postgresql, mysql, sqlite, sqlserver, mongodb or cockroachdb.
-3. Run prisma db pull to turn your database schema into a Prisma schema.
-4. Run prisma generate to generate the Prisma Client. You can then start querying your database.
-5. Tip: Explore how you can extend the ORM with scalable connection pooling, global caching, and real-time database events. Read: https://pris.ly/cli/beyond-orm
-
-More information in our documentation:
-https://pris.ly/d/getting-started
+Set up your database connection by adding this to your `.env` file:
+```bash
+DATABASE_URL="postgresql://postgres@localhost:5432/chat?schema=public"
 ```
 
-`npx prisma db push`
+Initialize Prisma database with the `init` migration:
+
+```
+npx prisma migrate dev --name init
+```
+
+Applies pending migrations:
+
+```
+npx prisma migrate deploy
+```
+
+Generate Prisma Client:
+```bash
+npx prisma generate
+```

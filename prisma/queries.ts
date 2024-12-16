@@ -1,16 +1,22 @@
 import { PrismaClient, type User, type Chat, type Message, type Document, type Suggestion } from '@prisma/client';
-import crypto from 'crypto'
+import { hash } from 'bcrypt-ts';
 
 const prisma = new PrismaClient();
 
-// Function to hash password using crypto
-function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex');
+// Function to hash password using bcrypt
+async function hashPassword(password: string): Promise<string> {
+  return hash(password, 10);
 }
 
 // User operations
+export async function getUser(email: string): Promise<User | null> {
+  return prisma.user.findUnique({
+    where: { email },
+  });
+}
+
 export async function createUser(email: string, password: string): Promise<User> {
-  const hashedPassword = hashPassword(password);
+  const hashedPassword = await hashPassword(password);
   return prisma.user.create({
     data: {
       email,
@@ -19,16 +25,19 @@ export async function createUser(email: string, password: string): Promise<User>
   });
 }
 
-export async function getUser(email: string): Promise<User | null> {
-  return prisma.user.findUnique({
-    where: { email },
-  });
-}
-
 // Chat operations
-export async function createChat(userId: string, title: string): Promise<Chat> {
+export async function saveChat({
+  id,
+  userId,
+  title,
+}: {
+  id: string;
+  userId: string;
+  title: string;
+}): Promise<Chat> {
   return prisma.chat.create({
     data: {
+      id,
       userId,
       title,
       createdAt: new Date(),
@@ -36,220 +45,81 @@ export async function createChat(userId: string, title: string): Promise<Chat> {
   });
 }
 
-export async function getChat(chatId: string): Promise<Chat | null> {
-  return prisma.chat.findUnique({
-    where: { id: chatId },
-    include: {
-      messages: true,
-    },
-  });
-}
-
-export async function getUserChats(userId: string): Promise<Chat[]> {
-  return prisma.chat.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      messages: true,
-    },
-  });
-}
-
-export async function deleteChatById(id: string): Promise<Chat> {
-  // First delete related votes and messages due to foreign key constraints
+export async function deleteChatById({ id }: { id: string }): Promise<Chat> {
+  // Delete related records first
   await prisma.vote.deleteMany({
-    where: { chatId: id }
+    where: { chatId: id },
   });
   await prisma.message.deleteMany({
-    where: { chatId: id }
-  });
-  // Then delete the chat
-  return prisma.chat.delete({
-    where: { id }
-  });
-}
-
-export async function getMessagesByChatId(id: string): Promise<Message[]> {
-  return prisma.message.findMany({
     where: { chatId: id },
-    orderBy: { createdAt: 'asc' }
+  });
+  
+  return prisma.chat.delete({
+    where: { id },
   });
 }
 
-export async function updateChatVisiblityById(
-  chatId: string,
-  visibility: 'private' | 'public'
-): Promise<Chat> {
-  return prisma.chat.update({
-    where: { id: chatId },
-    data: { visibility }
+export async function getChatsByUserId({ id }: { id: string }): Promise<Chat[]> {
+  return prisma.chat.findMany({
+    where: { userId: id },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+export async function getChatById({ id }: { id: string }): Promise<Chat | null> {
+  return prisma.chat.findUnique({
+    where: { id },
   });
 }
 
 // Message operations
-export async function saveMessages(chatId: string, messages: { role: string; content: any }[]): Promise<Message[]> {
-  const savedMessages = await Promise.all(
-    messages.map((msg) =>
-      prisma.message.create({
-        data: {
-          chatId,
-          role: msg.role,
-          content: msg.content,
-          createdAt: new Date(),
-        },
-      })
-    )
-  );
-  return savedMessages;
+export async function saveMessages({ messages }: { messages: Array<Message> }): Promise<Message[]> {
+  return prisma.message.createMany({
+    data: messages,
+  });
 }
 
-export async function getMessageById(id: string): Promise<Message | null> {
+export async function getMessagesByChatId({ id }: { id: string }): Promise<Message[]> {
+  return prisma.message.findMany({
+    where: { chatId: id },
+    orderBy: { createdAt: 'asc' },
+  });
+}
+
+export async function getMessageById({ id }: { id: string }): Promise<Message | null> {
   return prisma.message.findUnique({
     where: { id },
   });
 }
 
-export async function deleteMessagesByChatIdAfterTimestamp(
-  chatId: string,
-  timestamp: Date
-): Promise<{ count: number }> {
-  return prisma.message.deleteMany({
+export async function deleteMessagesByChatIdAfterTimestamp({
+  chatId,
+  timestamp,
+}: {
+  chatId: string;
+  timestamp: Date;
+}): Promise<{ count: number }> {
+  const result = await prisma.message.deleteMany({
     where: {
       chatId,
-      createdAt: {
-        gte: timestamp
-      }
-    }
-  });
-}
-
-// Document operations
-export async function saveDocument(
-  userId: string,
-  title: string,
-  content: string
-): Promise<Document> {
-  return prisma.document.create({
-    data: {
-      userId,
-      title,
-      content,
-      createdAt: new Date(),
+      createdAt: { gte: timestamp },
     },
   });
-}
-
-export async function getDocument(documentId: string): Promise<Document | null> {
-  return prisma.document.findUnique({
-    where: { id: documentId },
-  });
-}
-
-export async function getUserDocuments(userId: string): Promise<Document[]> {
-  return prisma.document.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-  });
-}
-
-export async function getDocumentsById(id: string): Promise<Document[]> {
-  return prisma.document.findMany({
-    where: { id },
-    orderBy: { createdAt: 'asc' }
-  });
-}
-
-export async function deleteDocumentsByIdAfterTimestamp(
-  id: string,
-  timestamp: Date
-): Promise<any> {
-  // First delete related suggestions
-  await prisma.suggestion.deleteMany({
-    where: {
-      documentId: id,
-      documentCreatedAt: {
-        gt: timestamp
-      }
-    }
-  });
-
-  // Then delete documents
-  return prisma.document.deleteMany({
-    where: {
-      id,
-      createdAt: {
-        gt: timestamp
-      }
-    }
-  });
-}
-
-// Suggestion operations
-export async function saveSuggestions(
-  documentId: string,
-  userId: string,
-  suggestions: {
-    originalText: string;
-    suggestedText: string;
-    description?: string;
-  }[]
-): Promise<Suggestion[]> {
-  const document = await prisma.document.findUnique({
-    where: { id: documentId },
-    select: { createdAt: true },
-  });
-
-  if (!document) {
-    throw new Error('Document not found');
-  }
-
-  const savedSuggestions = await Promise.all(
-    suggestions.map((suggestion) =>
-      prisma.suggestion.create({
-        data: {
-          documentId,
-          documentCreatedAt: document.createdAt,
-          userId,
-          originalText: suggestion.originalText,
-          suggestedText: suggestion.suggestedText,
-          description: suggestion.description,
-          createdAt: new Date(),
-        },
-      })
-    )
-  );
-
-  return savedSuggestions;
-}
-
-export async function getDocumentSuggestions(documentId: string): Promise<Suggestion[]> {
-  return prisma.suggestion.findMany({
-    where: { documentId },
-    orderBy: { createdAt: 'desc' },
-  });
-}
-
-export async function getSuggestionsByDocumentId(documentId: string): Promise<Suggestion[]> {
-  return prisma.suggestion.findMany({
-    where: { documentId }
-  });
-}
-
-export async function resolveSuggestion(suggestionId: string): Promise<Suggestion> {
-  return prisma.suggestion.update({
-    where: { id: suggestionId },
-    data: { isResolved: true },
-  });
+  return { count: result.count };
 }
 
 // Vote operations
-export async function voteMessage(
-  chatId: string,
-  messageId: string,
-  type: 'up' | 'down'
-): Promise<any> {
+export async function voteMessage({
+  chatId,
+  messageId,
+  type,
+}: {
+  chatId: string;
+  messageId: string;
+  type: 'up' | 'down';
+}): Promise<any> {
   const existingVote = await prisma.vote.findFirst({
-    where: { messageId }
+    where: { messageId },
   });
 
   if (existingVote) {
@@ -257,10 +127,10 @@ export async function voteMessage(
       where: {
         chatId_messageId: {
           chatId,
-          messageId
-        }
+          messageId,
+        },
       },
-      data: { isUpvoted: type === 'up' }
+      data: { isUpvoted: type === 'up' },
     });
   }
 
@@ -268,36 +138,99 @@ export async function voteMessage(
     data: {
       chatId,
       messageId,
-      isUpvoted: type === 'up'
-    }
+      isUpvoted: type === 'up',
+    },
   });
 }
 
-export async function getVotesByChatId(id: string): Promise<any[]> {
+export async function getVotesByChatId({ id }: { id: string }) {
   return prisma.vote.findMany({
-    where: { chatId: id }
+    where: { chatId: id },
   });
 }
 
-export async function getChatsByUserId({ id }: { id: string }): Promise<Chat[]> {
-  try {
-    return await prisma.chat.findMany({
-      where: { userId: id },
-      orderBy: { createdAt: 'desc' }
-    });
-  } catch (error) {
-    console.error('Failed to get chats by user from database');
-    throw error;
-  }
+// Document operations
+export async function saveDocument({
+  id,
+  title,
+  content,
+  userId,
+}: {
+  id: string;
+  title: string;
+  content: string;
+  userId: string;
+}): Promise<Document> {
+  return prisma.document.create({
+    data: {
+      id,
+      title,
+      content,
+      userId,
+      createdAt: new Date(),
+    },
+  });
 }
 
-export async function getChatById({ id }: { id: string }): Promise<Chat | null> {
-  try {
-    return await prisma.chat.findUnique({
-      where: { id }
-    });
-  } catch (error) {
-    console.error('Failed to get chat by id from database');
-    throw error;
-  }
+export async function getDocumentsById({ id }: { id: string }): Promise<Document[]> {
+  return prisma.document.findMany({
+    where: { id },
+    orderBy: { createdAt: 'asc' },
+  });
+}
+
+export async function getDocumentById({ id }: { id: string }): Promise<Document | null> {
+  return prisma.document.findUnique({
+    where: { id },
+  });
+}
+
+export async function deleteDocumentsByIdAfterTimestamp({
+  id,
+  timestamp,
+}: {
+  id: string;
+  timestamp: Date;
+}): Promise<{ count: number }> {
+  const result = await prisma.document.deleteMany({
+    where: {
+      id,
+      createdAt: { gte: timestamp },
+    },
+  });
+  return { count: result.count };
+}
+
+// Suggestion operations
+export async function saveSuggestions({
+  suggestions,
+}: {
+  suggestions: Array<Suggestion>;
+}): Promise<Suggestion[]> {
+  return prisma.suggestion.createMany({
+    data: suggestions,
+  });
+}
+
+export async function getSuggestionsByDocumentId({
+  documentId,
+}: {
+  documentId: string;
+}): Promise<Suggestion[]> {
+  return prisma.suggestion.findMany({
+    where: { documentId },
+  });
+}
+
+export async function updateChatVisiblityById({
+  chatId,
+  visibility,
+}: {
+  chatId: string;
+  visibility: 'private' | 'public';
+}): Promise<Chat> {
+  return prisma.chat.update({
+    where: { id: chatId },
+    data: { visibility },
+  });
 }
