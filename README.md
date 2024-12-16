@@ -61,40 +61,38 @@ pnpm dev
 Your app template should now be running on [localhost:3000](http://localhost:3000/).
 
 
-# Local Database Setup
+## Prisma Database Setup
 
-Install PostgreSQL if you haven't already:
-```bash
-brew install postgresql@16
-```
-Start PostgreSQL service:
-```bash
-brew services start postgresql@16
-```
+We use PostgreSQL as an example but you can use any database supported by Prisma.
 
-Create a new database:
-```bash
-createdb chat
-```
-
-Set up your database connection by adding this to your `.env` file:
-```bash
-DATABASE_URL="postgresql://postgres@localhost:5432/chat?schema=public"
-```
-
-Initialize Prisma database with the `init` migration:
-
-```
-npx prisma migrate dev --name init
+1. Create a new empty database named `chat`
+2. Set up your database connection by adding this to your `.env` file:
+  ```bash
+  DATABASE_URL="postgresql://postgres@localhost:5432/chat?schema=public"
+  ```
+3. Initialize Prisma database with the `init` migration:
+  ```
+  npx prisma migrate dev --name init
+  ```
+4. Apply pending migrations:
+  ```
+  npx prisma migrate deploy
+  ```
+5. Generate Prisma Client (must be run after any schema changes):
+  ```
+  npx prisma generate
 ```
 
-Applies pending migrations:
+Now you can test the app via `pnpm dev`.
 
-```
-npx prisma migrate deploy
-```
+## Handling Schema Changes
 
-Generate Prisma Client:
-```bash
-npx prisma generate
-```
+When you modify the Prisma schema (`schema.prisma`), follow these steps:
+
+1. Create and apply a new migration: `npx prisma migrate dev --name <description_of_change>`. This command will:
+
+- Create a new migration file
+- Apply the migration to your database
+- Regenerate Prisma Client
+
+2. Apply pending migrations: `npx prisma migrate deploy`. Note: If you're in development and don't need to keep the data, you can use `npx prisma migrate reset` to reset the database and apply all migrations from scratch.
