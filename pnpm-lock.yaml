@@ -3,6 +3,11 @@ lockfileVersion: 5.4
 specifiers:
   '@ai-sdk/openai': 1.0.6
   '@biomejs/biome': 1.9.4
+  '@codemirror/lang-javascript': ^6.2.2
+  '@codemirror/lang-python': ^6.1.6
+  '@codemirror/state': ^6.5.0
+  '@codemirror/theme-one-dark': ^6.1.2
+  '@codemirror/view': ^6.35.3
   '@prisma/client': ^4.16.0
   '@radix-ui/react-alert-dialog': ^1.1.2
   '@radix-ui/react-dialog': ^1.1.2
@@ -28,6 +33,7 @@ specifiers:
   class-variance-authority: ^0.7.0
   classnames: ^2.5.1
   clsx: ^2.1.1
+  codemirror: ^6.0.1
   date-fns: ^4.1.0
   diff-match-patch: ^1.0.5
   dotenv: ^16.4.5
@@ -62,6 +68,7 @@ specifiers:
   react: 19.0.0-rc-45804af1-20241021
   react-dom: 19.0.0-rc-45804af1-20241021
   react-markdown: ^9.0.1
+  react-resizable-panels: ^2.1.7
   remark-gfm: ^4.0.0
   server-only: ^0.0.1
   sonner: ^1.5.0
@@ -76,6 +83,11 @@ specifiers:
 
 dependencies:
   '@ai-sdk/openai': 1.0.6_zod@3.24.1
+  '@codemirror/lang-javascript': 6.2.2
+  '@codemirror/lang-python': 6.1.6_@codemirror+view@6.35.3
+  '@codemirror/state': 6.5.0
+  '@codemirror/theme-one-dark': 6.1.2
+  '@codemirror/view': 6.35.3
   '@prisma/client': 4.16.2_prisma@4.16.2
   '@radix-ui/react-alert-dialog': 1.1.3_e4hbwiysshkkcfm4dcibb4awum
   '@radix-ui/react-dialog': 1.1.3_e4hbwiysshkkcfm4dcibb4awum
@@ -95,6 +107,7 @@ dependencies:
   class-variance-authority: 0.7.1
   classnames: 2.5.1
   clsx: 2.1.1
+  codemirror: 6.0.1
   date-fns: 4.1.0
   diff-match-patch: 1.0.5
   dotenv: 16.4.7
@@ -120,6 +133,7 @@ dependencies:
   react: 19.0.0-rc-45804af1-20241021
   react-dom: 19.0.0-rc-45804af1-20241021_de6hgiziiy6gp262uotifttkwa
   react-markdown: 9.0.1_2lu73p2qgdqjyxkafhbrqt7o74
+  react-resizable-panels: 2.1.7_dykjoovfm34d3asbhaxfbmzdly
   remark-gfm: 4.0.0
   server-only: 0.0.1
   sonner: 1.7.1_dykjoovfm34d3asbhaxfbmzdly
@@ -335,6 +349,101 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@codemirror/autocomplete/6.18.3_i2q73plqwoak4u3pshqbpzhv5e:
+    resolution: {integrity: sha512-1dNIOmiM0z4BIBwxmxEfA1yoxh1MF/6KPBbh20a5vphGV0ictKlgQsbJs6D6SkR6iJpGbpwRsa6PFMNlg9T9pQ==}
+    peerDependencies:
+      '@codemirror/state': ^6.0.0
+      '@codemirror/view': ^6.0.0
+    dependencies:
+      '@codemirror/language': 6.10.6
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.35.3
+      '@lezer/common': 1.2.3
+    dev: false
+
+  /@codemirror/commands/6.7.1:
+    resolution: {integrity: sha512-llTrboQYw5H4THfhN4U3qCnSZ1SOJ60ohhz+SzU0ADGtwlc533DtklQP0vSFaQuCPDn3BPpOd1GbbnUtwNjsrw==}
+    dependencies:
+      '@codemirror/language': 6.10.6
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.35.3
+      '@lezer/common': 1.2.3
+    dev: false
+
+  /@codemirror/lang-javascript/6.2.2:
+    resolution: {integrity: sha512-VGQfY+FCc285AhWuwjYxQyUQcYurWlxdKYT4bqwr3Twnd5wP5WSeu52t4tvvuWmljT4EmgEgZCqSieokhtY8hg==}
+    dependencies:
+      '@codemirror/autocomplete': 6.18.3_i2q73plqwoak4u3pshqbpzhv5e
+      '@codemirror/language': 6.10.6
+      '@codemirror/lint': 6.8.4
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.35.3
+      '@lezer/common': 1.2.3
+      '@lezer/javascript': 1.4.21
+    dev: false
+
+  /@codemirror/lang-python/6.1.6_@codemirror+view@6.35.3:
+    resolution: {integrity: sha512-ai+01WfZhWqM92UqjnvorkxosZ2aq2u28kHvr+N3gu012XqY2CThD67JPMHnGceRfXPDBmn1HnyqowdpF57bNg==}
+    dependencies:
+      '@codemirror/autocomplete': 6.18.3_i2q73plqwoak4u3pshqbpzhv5e
+      '@codemirror/language': 6.10.6
+      '@codemirror/state': 6.5.0
+      '@lezer/common': 1.2.3
+      '@lezer/python': 1.1.15
+    transitivePeerDependencies:
+      - '@codemirror/view'
+    dev: false
+
+  /@codemirror/language/6.10.6:
+    resolution: {integrity: sha512-KrsbdCnxEztLVbB5PycWXFxas4EOyk/fPAfruSOnDDppevQgid2XZ+KbJ9u+fDikP/e7MW7HPBTvTb8JlZK9vA==}
+    dependencies:
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.35.3
+      '@lezer/common': 1.2.3
+      '@lezer/highlight': 1.2.1
+      '@lezer/lr': 1.4.2
+      style-mod: 4.1.2
+    dev: false
+
+  /@codemirror/lint/6.8.4:
+    resolution: {integrity: sha512-u4q7PnZlJUojeRe8FJa/njJcMctISGgPQ4PnWsd9268R4ZTtU+tfFYmwkBvgcrK2+QQ8tYFVALVb5fVJykKc5A==}
+    dependencies:
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.35.3
+      crelt: 1.0.6
+    dev: false
+
+  /@codemirror/search/6.5.8:
+    resolution: {integrity: sha512-PoWtZvo7c1XFeZWmmyaOp2G0XVbOnm+fJzvghqGAktBW3cufwJUWvSCcNG0ppXiBEM05mZu6RhMtXPv2hpllig==}
+    dependencies:
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.35.3
+      crelt: 1.0.6
+    dev: false
+
+  /@codemirror/state/6.5.0:
+    resolution: {integrity: sha512-MwBHVK60IiIHDcoMet78lxt6iw5gJOGSbNbOIVBHWVXIH4/Nq1+GQgLLGgI1KlnN86WDXsPudVaqYHKBIx7Eyw==}
+    dependencies:
+      '@marijn/find-cluster-break': 1.0.2
+    dev: false
+
+  /@codemirror/theme-one-dark/6.1.2:
+    resolution: {integrity: sha512-F+sH0X16j/qFLMAfbciKTxVOwkdAS336b7AXTKOZhy8BR3eH/RelsnLgLFINrpST63mmN2OuwUt0W2ndUgYwUA==}
+    dependencies:
+      '@codemirror/language': 6.10.6
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.35.3
+      '@lezer/highlight': 1.2.1
+    dev: false
+
+  /@codemirror/view/6.35.3:
+    resolution: {integrity: sha512-ScY7L8+EGdPl4QtoBiOzE4FELp7JmNUsBvgBcCakXWM2uiv/K89VAzU3BMDscf0DsACLvTKePbd5+cFDTcei6g==}
+    dependencies:
+      '@codemirror/state': 6.5.0
+      style-mod: 4.1.2
+      w3c-keyname: 2.2.8
+    dev: false
 
   /@drizzle-team/brocli/0.10.2:
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -1292,6 +1401,42 @@ packages:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  /@lezer/common/1.2.3:
+    resolution: {integrity: sha512-w7ojc8ejBqr2REPsWxJjrMFsA/ysDCFICn8zEOR9mrqzOu2amhITYuLD8ag6XZf0CFXDrhKqw7+tW8cX66NaDA==}
+    dev: false
+
+  /@lezer/highlight/1.2.1:
+    resolution: {integrity: sha512-Z5duk4RN/3zuVO7Jq0pGLJ3qynpxUVsh7IbUbGj88+uV2ApSAn6kWg2au3iJb+0Zi7kKtqffIESgNcRXWZWmSA==}
+    dependencies:
+      '@lezer/common': 1.2.3
+    dev: false
+
+  /@lezer/javascript/1.4.21:
+    resolution: {integrity: sha512-lL+1fcuxWYPURMM/oFZLEDm0XuLN128QPV+VuGtKpeaOGdcl9F2LYC3nh1S9LkPqx9M0mndZFdXCipNAZpzIkQ==}
+    dependencies:
+      '@lezer/common': 1.2.3
+      '@lezer/highlight': 1.2.1
+      '@lezer/lr': 1.4.2
+    dev: false
+
+  /@lezer/lr/1.4.2:
+    resolution: {integrity: sha512-pu0K1jCIdnQ12aWNaAVU5bzi7Bd1w54J3ECgANPmYLtQKP0HBj2cE/5coBD66MT10xbtIuUr7tg0Shbsvk0mDA==}
+    dependencies:
+      '@lezer/common': 1.2.3
+    dev: false
+
+  /@lezer/python/1.1.15:
+    resolution: {integrity: sha512-aVQ43m2zk4FZYedCqL0KHPEUsqZOrmAvRhkhHlVPnDD1HODDyyQv5BRIuod4DadkgBEZd53vQOtXTonNbEgjrQ==}
+    dependencies:
+      '@lezer/common': 1.2.3
+      '@lezer/highlight': 1.2.1
+      '@lezer/lr': 1.4.2
+    dev: false
+
+  /@marijn/find-cluster-break/1.0.2:
+    resolution: {integrity: sha512-l0h88YhZFyKdXIFNfSWpyjStDjGHwZ/U7iobcK1cQQD8sejsONdQtTVU+1wVN1PBw40PiiHB1vA5S7VTfQiP9g==}
+    dev: false
 
   /@neondatabase/serverless/0.9.5:
     resolution: {integrity: sha512-siFas6gItqv6wD/pZnvdu34wEqgG3nSE6zWZdq5j2DEsa+VvX8i/5HXJOo06qrw5axPXn+lGCxeR+NLaSPIXug==}
@@ -2727,6 +2872,18 @@ packages:
   /clsx/2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
+    dev: false
+
+  /codemirror/6.0.1:
+    resolution: {integrity: sha512-J8j+nZ+CdWmIeFIGXEFbFPtpiYacFMDR8GlHK3IyHQJMCaVRfGx9NT+Hxivv1ckLWPvNdZqndbr/7lVhrf/Svg==}
+    dependencies:
+      '@codemirror/autocomplete': 6.18.3_i2q73plqwoak4u3pshqbpzhv5e
+      '@codemirror/commands': 6.7.1
+      '@codemirror/language': 6.10.6
+      '@codemirror/lint': 6.8.4
+      '@codemirror/search': 6.5.8
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.35.3
     dev: false
 
   /color-convert/2.0.1:
@@ -5594,6 +5751,16 @@ packages:
       use-sidecar: 1.1.3_2lu73p2qgdqjyxkafhbrqt7o74
     dev: false
 
+  /react-resizable-panels/2.1.7_dykjoovfm34d3asbhaxfbmzdly:
+    resolution: {integrity: sha512-JtT6gI+nURzhMYQYsx8DKkx6bSoOGFp7A3CwMrOb8y5jFHFyqwo9m68UhmXRw57fRVJksFn1TSlm3ywEQ9vMgA==}
+    peerDependencies:
+      react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+    dependencies:
+      react: 19.0.0-rc-45804af1-20241021
+      react-dom: 19.0.0-rc-45804af1-20241021_de6hgiziiy6gp262uotifttkwa
+    dev: false
+
   /react-style-singleton/2.2.3_2lu73p2qgdqjyxkafhbrqt7o74:
     resolution: {integrity: sha512-b6jSvxvVnyptAiLjbkWLE/lOnR4lfTtDAl+eUC7RZy+QQWc6wRzIV2CE6xBuMmDxc2qIihtDCZD5NPOFl7fRBQ==}
     engines: {node: '>=10'}
@@ -6054,6 +6221,10 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
     dev: true
+
+  /style-mod/4.1.2:
+    resolution: {integrity: sha512-wnD1HyVqpJUI2+eKZ+eo1UwghftP6yuFheBqqe+bWCotBjC2K1YnteJILRMs3SM4V/0dLEW1SC27MWP5y+mwmw==}
+    dev: false
 
   /style-to-object/1.0.8:
     resolution: {integrity: sha512-xT47I/Eo0rwJmaXC4oilDGDWLohVhR6o/xAQcPQN8q6QBuZVL8qMYL85kLmST5cPjAorwvqIA4qXTRQoYHaL6g==}
