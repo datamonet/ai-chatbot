@@ -62,10 +62,13 @@ export const register = async (
     });
 
     const user = await getUser(validatedData.email);
+    console.log(user);
     if (user) {
       return { status: 'user_exists' } as RegisterActionState;
     }
+
     await createUser(validatedData.email, validatedData.password);
+
     await signIn('credentials', {
       email: validatedData.email,
       password: validatedData.password,

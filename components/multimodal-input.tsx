@@ -228,10 +228,10 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl !text-base bg-muted',
+          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
           className,
         )}
-        rows={3}
+        rows={2}
         autoFocus
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
@@ -246,17 +246,21 @@ function PureMultimodalInput({
         }}
       />
 
-      {isLoading ? (
-        <StopButton stop={stop} setMessages={setMessages} />
-      ) : (
-        <SendButton
-          input={input}
-          submitForm={submitForm}
-          uploadQueue={uploadQueue}
-        />
-      )}
+      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
+        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
+      </div>
 
-      <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
+      <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
+        {isLoading ? (
+          <StopButton stop={stop} setMessages={setMessages} />
+        ) : (
+          <SendButton
+            input={input}
+            submitForm={submitForm}
+            uploadQueue={uploadQueue}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -281,13 +285,13 @@ function PureAttachmentsButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit absolute bottom-2 right-11 m-0.5 dark:border-zinc-700"
+      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
       onClick={(event) => {
         event.preventDefault();
         fileInputRef.current?.click();
       }}
-      variant="outline"
       disabled={isLoading}
+      variant="ghost"
     >
       <PaperclipIcon size={14} />
     </Button>
@@ -305,7 +309,7 @@ function PureStopButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
+      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();
         stop();
@@ -330,7 +334,7 @@ function PureSendButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
+      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault();
         submitForm();
@@ -345,6 +349,6 @@ function PureSendButton({
 const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
     return false;
-  if (!prevProps.input !== !nextProps.input) return false;
+  if (prevProps.input !== nextProps.input) return false;
   return true;
 });

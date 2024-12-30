@@ -1,31 +1,28 @@
-import { PrismaClient, type User, type Chat, type Message, type Document, type Suggestion } from '@prisma/client';
-import { hash } from 'bcrypt-ts';
+
+import { PrismaClient, type User, type Chat, type Message, type Document, type Suggestion, Prisma } from '@prisma/client';
+import { genSaltSync, hashSync } from 'bcrypt-ts';
 
 const prisma = new PrismaClient();
 
-// Function to hash password using bcrypt
-async function hashPassword(password: string): Promise<string> {
-  return hash(password, 10);
-}
-
-// User operations
 export async function getUser(email: string): Promise<User | null> {
-  return prisma.user.findUnique({
-    where: { email },
+
+  const data =  await prisma.user.findUnique({
+    where: { email }
   });
+
+  return data
 }
 
-export async function createUser(email: string, password: string): Promise<User> {
-  const hashedPassword = await hashPassword(password);
-  return prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-    },
-  });
+export async function createUser(email: string, password: string) {
+  const salt = genSaltSync(10);
+  const hash = hashSync(password, salt);
+
+  return await prisma.user.create({
+      data: { email, password: hash }
+    });
+  
 }
 
-// Chat operations
 export async function saveChat({
   id,
   userId,
@@ -34,81 +31,92 @@ export async function saveChat({
   id: string;
   userId: string;
   title: string;
-}): Promise<Chat> {
-  return prisma.chat.create({
-    data: {
-      id,
-      userId,
-      title,
-      createdAt: new Date(),
-    },
-  });
+}) {
+  try {
+    return await prisma.chat.create({
+      data: {
+        id,
+        createdAt: new Date(),
+        userId,
+        title,
+      }
+    });
+  } catch (error) {
+    console.error('Failed to save chat in database');
+    throw error;
+  }
 }
 
-export async function deleteChatById({ id }: { id: string }): Promise<Chat> {
-  // Delete related records first
-  await prisma.vote.deleteMany({
-    where: { chatId: id },
-  });
-  await prisma.message.deleteMany({
-    where: { chatId: id },
-  });
-  
-  return prisma.chat.delete({
-    where: { id },
-  });
+export async function deleteChatById({ id }: { id: string }) {
+  try {
+    // Delete related records first due to foreign key constraints
+    await prisma.vote.deleteMany({
+      where: { chatId: id }
+    });
+    await prisma.message.deleteMany({
+      where: { chatId: id }
+    });
+    return await prisma.chat.delete({
+      where: { id }
+    });
+  } catch (error) {
+    console.error('Failed to delete chat by id from database');
+    throw error;
+  }
 }
 
-export async function getChatsByUserId({ id }: { id: string }): Promise<Chat[]> {
-  return prisma.chat.findMany({
-    where: { userId: id },
-    orderBy: { createdAt: 'desc' },
-  });
+export async function getChatsByUserId({ id }: { id: string }) {
+  try {
+    return await prisma.chat.findMany({
+      where: { userId: id },
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (error) {
+    console.error('Failed to get chats by user from database');
+    throw error;
+  }
 }
 
-export async function getChatById({ id }: { id: string }): Promise<Chat | null> {
-  return prisma.chat.findUnique({
-    where: { id },
-  });
+export async function getChatById({ id }: { id: string }) {
+  try {
+    return await prisma.chat.findUnique({
+      where: { id }
+    });
+  } catch (error) {
+    console.error('Failed to get chat by id from database');
+    throw error;
+  }
 }
 
-// Message operations
-export async function saveMessages({ messages }: { messages: Array<Message> }): Promise<Message[]> {
-  return prisma.message.createMany({
-    data: messages,
-  });
-}
-
-export async function getMessagesByChatId({ id }: { id: string }): Promise<Message[]> {
-  return prisma.message.findMany({
-    where: { chatId: id },
-    orderBy: { createdAt: 'asc' },
-  });
-}
-
-export async function getMessageById({ id }: { id: string }): Promise<Message | null> {
-  return prisma.message.findUnique({
-    where: { id },
-  });
-}
-
-export async function deleteMessagesByChatIdAfterTimestamp({
-  chatId,
-  timestamp,
-}: {
+export async function saveMessages({ messages }: { messages: Array<{
+  id: string;
   chatId: string;
-  timestamp: Date;
-}): Promise<{ count: number }> {
-  const result = await prisma.message.deleteMany({
-    where: {
-      chatId,
-      createdAt: { gte: timestamp },
-    },
-  });
-  return { count: result.count };
+  role: string;
+  content: Prisma.InputJsonValue;
+  createdAt: Date;
+}> }) {
+  try {
+    return await prisma.message.createMany({
+      data: messages
+    });
+  } catch (error) {
+    console.error('Failed to save messages in database', error);
+    throw error;
+  }
 }
 
-// Vote operations
+export async function getMessagesByChatId({ id }: { id: string }) {
+  try {
+    return await prisma.message.findMany({
+      where: { chatId: id },
+      orderBy: { createdAt: 'asc' }
+    });
+  } catch (error) {
+    console.error('Failed to get messages by chat id from database', error);
+    throw error;
+  }
+}
+
 export async function voteMessage({
   chatId,
   messageId,
@@ -117,72 +125,99 @@ export async function voteMessage({
   chatId: string;
   messageId: string;
   type: 'up' | 'down';
-}): Promise<any> {
-  const existingVote = await prisma.vote.findFirst({
-    where: { messageId },
-  });
-
-  if (existingVote) {
-    return prisma.vote.update({
-      where: {
-        chatId_messageId: {
-          chatId,
-          messageId,
-        },
-      },
-      data: { isUpvoted: type === 'up' },
+}) {
+  try {
+    const existingVote = await prisma.vote.findFirst({
+      where: { messageId }
     });
-  }
 
-  return prisma.vote.create({
-    data: {
-      chatId,
-      messageId,
-      isUpvoted: type === 'up',
-    },
-  });
+    if (existingVote) {
+      return await prisma.vote.update({
+        where: {
+          chatId_messageId: {
+            chatId,
+            messageId
+          }
+        },
+        data: { isUpvoted: type === 'up' }
+      });
+    }
+    return await prisma.vote.create({
+      data: {
+        chatId,
+        messageId,
+        isUpvoted: type === 'up',
+      }
+    });
+  } catch (error) {
+    console.error('Failed to upvote message in database', error);
+    throw error;
+  }
 }
 
 export async function getVotesByChatId({ id }: { id: string }) {
-  return prisma.vote.findMany({
-    where: { chatId: id },
-  });
+  try {
+    return await prisma.vote.findMany({
+      where: { chatId: id }
+    });
+  } catch (error) {
+    console.error('Failed to get votes by chat id from database', error);
+    throw error;
+  }
 }
 
-// Document operations
 export async function saveDocument({
   id,
   title,
+  kind,
   content,
   userId,
 }: {
   id: string;
   title: string;
+  kind: 'text' | 'code';
   content: string;
   userId: string;
-}): Promise<Document> {
-  return prisma.document.create({
-    data: {
-      id,
-      title,
-      content,
-      userId,
-      createdAt: new Date(),
-    },
-  });
+}) {
+  try {
+    return await prisma.document.create({
+      data: {
+        id,
+        title,
+        content,
+        userId,
+        kind,
+        createdAt: new Date(),
+      }
+    });
+  } catch (error) {
+    console.error('Failed to save document in database');
+    throw error;
+  }
 }
 
-export async function getDocumentsById({ id }: { id: string }): Promise<Document[]> {
-  return prisma.document.findMany({
-    where: { id },
-    orderBy: { createdAt: 'asc' },
-  });
+export async function getDocumentsById({ id }: { id: string }) {
+  try {
+    return await prisma.document.findMany({
+      where: { id },
+      orderBy: { createdAt: 'asc' }
+    });
+  } catch (error) {
+    console.error('Failed to get document by id from database');
+    throw error;
+  }
 }
 
-export async function getDocumentById({ id }: { id: string }): Promise<Document | null> {
-  return prisma.document.findUnique({
-    where: { id },
-  });
+export async function getDocumentById({ id }: { id: string }) {
+  try {
+    return await prisma.document.findFirst({
+      where: { id },
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (error) {
+    console.error('Failed to get document by id from database');
+    throw error;
+  }
 }
 
 export async function deleteDocumentsByIdAfterTimestamp({
@@ -191,35 +226,86 @@ export async function deleteDocumentsByIdAfterTimestamp({
 }: {
   id: string;
   timestamp: Date;
-}): Promise<{ count: number }> {
-  const result = await prisma.document.deleteMany({
-    where: {
-      id,
-      createdAt: { gte: timestamp },
-    },
-  });
-  return { count: result.count };
+}) {
+  try {
+    await prisma.suggestion.deleteMany({
+      where: {
+        documentId: id,
+        documentCreatedAt: { gt: timestamp }
+      }
+    });
+
+    return await prisma.document.deleteMany({
+      where: {
+        id,
+        createdAt: { gt: timestamp }
+      }
+    });
+  } catch (error) {
+    console.error('Failed to delete documents by id after timestamp from database');
+    throw error;
+  }
 }
 
-// Suggestion operations
 export async function saveSuggestions({
   suggestions,
 }: {
   suggestions: Array<Suggestion>;
-}): Promise<Suggestion[]> {
-  return prisma.suggestion.createMany({
-    data: suggestions,
-  });
+}) {
+  try {
+    return await prisma.suggestion.createMany({
+      data: suggestions
+    });
+  } catch (error) {
+    console.error('Failed to save suggestions in database');
+    throw error;
+  }
 }
 
 export async function getSuggestionsByDocumentId({
   documentId,
 }: {
   documentId: string;
-}): Promise<Suggestion[]> {
-  return prisma.suggestion.findMany({
-    where: { documentId },
-  });
+}) {
+  try {
+    return await prisma.suggestion.findMany({
+      where: { documentId }
+    });
+  } catch (error) {
+    console.error('Failed to get suggestions by document version from database');
+    throw error;
+  }
+}
+
+export async function getMessageById({ id }: { id: string }) {
+  try {
+    return await prisma.message.findUnique({
+      where: { id }
+    });
+  } catch (error) {
+    console.error('Failed to get message by id from database');
+    throw error;
+  }
+}
+
+export async function deleteMessagesByChatIdAfterTimestamp({
+  chatId,
+  timestamp,
+}: {
+  chatId: string;
+  timestamp: Date;
+}) {
+  try {
+    return await prisma.message.deleteMany({
+      where: {
+        chatId,
+        createdAt: { gte: timestamp }
+      }
+    });
+  } catch (error) {
+    console.error('Failed to delete messages by id after timestamp from database');
+    throw error;
+  }
 }
 
 export async function updateChatVisiblityById({
@@ -228,9 +314,14 @@ export async function updateChatVisiblityById({
 }: {
   chatId: string;
   visibility: 'private' | 'public';
-}): Promise<Chat> {
-  return prisma.chat.update({
-    where: { id: chatId },
-    data: { visibility },
-  });
+}) {
+  try {
+    return await prisma.chat.update({
+      where: { id: chatId },
+      data: { visibility }
+    });
+  } catch (error) {
+    console.error('Failed to update chat visibility in database');
+    throw error;
+  }
 }

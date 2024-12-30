@@ -9,6 +9,7 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  enum as pgEnum,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -72,7 +73,7 @@ export const document = pgTable(
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    kind: varchar('text', { enum: ['text', 'code'] })
+    kind: pgEnum('kind', ['text', 'code'])
       .notNull()
       .default('text'),
     userId: uuid('userId')

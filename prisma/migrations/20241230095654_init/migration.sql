@@ -1,3 +1,9 @@
+-- CreateEnum
+CREATE TYPE "Visibility" AS ENUM ('public', 'private');
+
+-- CreateEnum
+CREATE TYPE "DocumentKind" AS ENUM ('text', 'code');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -13,7 +19,7 @@ CREATE TABLE "Chat" (
     "createdAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "visibility" TEXT NOT NULL DEFAULT 'private',
+    "visibility" "Visibility" NOT NULL DEFAULT 'private',
 
     CONSTRAINT "Chat_pkey" PRIMARY KEY ("id")
 );
@@ -44,6 +50,7 @@ CREATE TABLE "Document" (
     "createdAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT,
+    "kind" "DocumentKind" NOT NULL DEFAULT 'text',
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "Document_pkey" PRIMARY KEY ("id")
