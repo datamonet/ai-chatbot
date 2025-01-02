@@ -4,7 +4,7 @@ import {
   deleteDocumentsByIdAfterTimestamp,
   getDocumentsById,
   saveDocument,
-} from '@/prisma/queries';
+} from '@/lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const documents = await getDocumentsById( id );
+  const documents = await getDocumentsById({ id });
 
   const [document] = documents;
 
@@ -56,17 +56,13 @@ export async function POST(request: Request) {
   }: { content: string; title: string; kind: BlockKind } = await request.json();
 
   if (session.user?.id) {
-    const document = await saveDocument(
-    session.user.id,
-      title,
-<<<<<<< HEAD
+    const document = await saveDocument({
+      id,
       content,
-    );
-=======
+      title,
       kind,
       userId: session.user.id,
     });
->>>>>>> 9778631d6f4e4830c7dfa9401f1a385b84f5457a
 
     return Response.json(document, { status: 200 });
   }
@@ -89,7 +85,7 @@ export async function PATCH(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const documents = await getDocumentsById( id );
+  const documents = await getDocumentsById({ id });
 
   const [document] = documents;
 
@@ -97,10 +93,10 @@ export async function PATCH(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  await deleteDocumentsByIdAfterTimestamp(
+  await deleteDocumentsByIdAfterTimestamp({
     id,
- new Date(timestamp),
-  );
+    timestamp: new Date(timestamp),
+  });
 
   return new Response('Deleted', { status: 200 });
 }

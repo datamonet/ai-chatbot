@@ -24,7 +24,7 @@ import {
   saveMessages,
   saveSuggestions,
 } from '@/prisma/queries';
-import type { Suggestion } from '@/prisma/schema.';
+import type { Suggestion } from '@prisma/client';
 import {
   generateUUID,
   getMostRecentUserMessage,
